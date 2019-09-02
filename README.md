@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/mmcc007/tool_base.svg?branch=master)](https://travis-ci.com/mmcc007/tool_base)
-[![codecov](https://codecov.io/gh/mmcc007/screenshots/branch/master/graph/badge.svg)](https://codecov.io/gh/mmcc007/tool_base)
+[![codecov](https://codecov.io/gh/mmcc007/tool_base/branch/master/graph/badge.svg)](https://codecov.io/gh/mmcc007/tool_base)
 
 A library for Dart developers.
 
