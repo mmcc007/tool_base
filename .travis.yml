@@ -1,4 +1,11 @@
-env: Run Tests
+language: generic
+
+env:
+  - Run Tests
+  - FLUTTER_CHANNEL=stable
+  - FLUTTER_VERSION=1.7.8+hotfix.4-${FLUTTER_CHANNEL}
+  - OS=linux
+
 # install flutter on linux
 before_install:
   - sudo apt-get install -y --no-install-recommends lib32stdc++6 libstdc++6 > /dev/null
