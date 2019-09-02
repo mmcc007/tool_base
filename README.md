@@ -1,7 +1,7 @@
-A library for Dart developers.
+[![Build Status](https://travis-ci.com/mmcc007/tool_base.svg?branch=master)](https://travis-ci.com/mmcc007/tool_base)
+[![codecov](https://codecov.io/gh/mmcc007/screenshots/branch/master/graph/badge.svg)](https://codecov.io/gh/mmcc007/tool_base)
 
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+A library for Dart developers.
 
 ## Usage
 
@@ -10,10 +10,17 @@ A simple usage example:
 ```dart
 import 'package:tool_base/tool_base.dart';
 
+import 'context_runner.dart';
+
 main() {
-  var awesome = new Awesome();
+  return runInContext<void>(() async {
+    printTrace('Running in context');
+    printStatus('Hello, world!');
+  });
 }
 ```
+
+See [example](example) for details.
 
 ## Features and bugs
 

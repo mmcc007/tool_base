@@ -1,0 +1,9 @@
+env: Run Tests
+language: dart
+dart: stable
+install:
+  # install coverage tool
+  - pub global activate coverage
+script:
+  - script/code_coverage.sh
+after_success: bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
