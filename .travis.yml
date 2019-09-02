@@ -18,6 +18,7 @@ install:
   # install coverage tool
   - pub global activate coverage
 script:
+  - flutter doctor -v
   - pub get
   - script/code_coverage.sh
 after_success: bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
