@@ -1,3 +1,4 @@
+[![pub package](https://img.shields.io/pub/v/tool_base.svg)](https://pub.dartlang.org/packages/tool_base)
 [![Build Status](https://travis-ci.com/mmcc007/tool_base.svg?branch=master)](https://travis-ci.com/mmcc007/tool_base)
 [![codecov](https://codecov.io/gh/mmcc007/tool_base/branch/master/graph/badge.svg)](https://codecov.io/gh/mmcc007/tool_base)
 
