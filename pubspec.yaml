@@ -1,8 +1,8 @@
 name: tool_base
-description: A starting point for Dart libraries or applications.
-# version: 1.0.0
-# homepage: https://www.example.com
-# author: Maurice McCabe <email@example.com>
+description: Flutter Tools' base. Use to create command line tools.
+version: 1.9.5
+homepage: https://github.com/mmcc007/tool_base
+author: Maurice McCabe <mmcc007@gmail.com>
 
 environment:
   # The pub client defaults to an <2.0.0 sdk constraint which we need to explicitly overwrite.
