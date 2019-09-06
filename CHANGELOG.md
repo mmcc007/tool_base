@@ -1,3 +1,6 @@
+## 1.9.5+1
+- Fixed analysis warnings.
+
 ## 1.9.5
 
 - Initial version.  
