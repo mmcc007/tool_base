@@ -23,7 +23,7 @@ import 'package:tool_base/src/base/io.dart';
 import 'package:mockito/mockito.dart';
 import 'package:process/process.dart';
 
-import 'common.dart';
+//import 'common.dart';
 
 //class MockApplicationPackageStore extends ApplicationPackageStore {
 //  MockApplicationPackageStore()

@@ -4,8 +4,8 @@
 library tool_base;
 
 export 'src/base/common.dart';
-export 'src/base/context.dart';
 export 'src/base/config.dart';
+export 'src/base/context.dart';
 export 'src/base/file_system.dart';
 export 'src/base/io.dart';
 export 'src/base/logger.dart';
