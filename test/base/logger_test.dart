@@ -36,11 +36,11 @@ void main() {
 
       expect(
           mockLogger.statusText,
-          matches(r'^\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] Hey Hey Hey Hey\n'
-              r'\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] Oooh, I do I do I do\n$'));
+          matches(r'^\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] Hey Hey Hey Hey\n'
+              r'\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] Oooh, I do I do I do\n$'));
       expect(mockLogger.traceText, '');
       expect(mockLogger.errorText,
-          matches(r'^\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] Helpless!\n$'));
+          matches(r'^\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] Helpless!\n$'));
     }, overrides: <Type, Generator>{
       OutputPreferences: () => OutputPreferences(showColor: false),
       Platform: _kNoAnsiPlatform,
@@ -56,14 +56,14 @@ void main() {
 
       expect(
           mockLogger.statusText,
-          matches(r'^\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] '
+          matches(r'^\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] '
               '${bold}Hey Hey Hey Hey$resetBold'
-              r'\n\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] Oooh, I do I do I do\n$'));
+              r'\n\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] Oooh, I do I do I do\n$'));
       expect(mockLogger.traceText, '');
       expect(
           mockLogger.errorText,
           matches('^$red'
-              r'\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] '
+              r'\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] '
               '${bold}Helpless!$resetBold$resetColor'
               r'\n$'));
     }, overrides: <Type, Generator>{
@@ -779,12 +779,12 @@ void main() {
       logger.startProgress('BBB', timeout: timeoutConfiguration.fastOperation)
         ..stop();
       expect(outputStdout(), <Matcher>[
-        matches(r'^\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] AAA$'),
+        matches(r'^\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] AAA$'),
         matches(
-            r'^\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] AAA \(completed.*\)$'),
-        matches(r'^\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] BBB$'),
+            r'^\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] AAA \(completed.*\)$'),
+        matches(r'^\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] BBB$'),
         matches(
-            r'^\[ (?: {0,2}\+[0-9]{1,3} ms|       )\] BBB \(completed.*\)$'),
+            r'^\[ (?: {0,2}\+[0-9]{1,4} ms|       )\] BBB \(completed.*\)$'),
         matches(r'^$'),
       ]);
     }, overrides: <Type, Generator>{

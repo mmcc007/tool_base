@@ -4,7 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' as io show IOSink, ProcessSignal;
+import 'dart:io' as io show IOSink, ProcessSignal, Stdout, StdoutException;
 
 //import 'package:tool_base/src/android/android_device.dart';
 //import 'package:tool_base/src/android/android_sdk.dart' show AndroidSdk;
@@ -141,13 +141,14 @@ import 'package:process/process.dart';
 typedef ProcessFactory = Process Function(List<String> command);
 
 /// A ProcessManager that starts Processes by delegating to a ProcessFactory.
-class MockProcessManager implements ProcessManager {
+class MockProcessManager extends Mock implements ProcessManager {
   ProcessFactory processFactory = (List<String> commands) => MockProcess();
-  bool succeed = true;
+  bool canRunSucceeds = true;
+  bool runSucceeds = true;
   List<String> commands;
 
   @override
-  bool canRun(dynamic command, {String workingDirectory}) => succeed;
+  bool canRun(dynamic command, { String workingDirectory }) => canRunSucceeds;
 
   @override
   Future<Process> start(
@@ -158,19 +159,15 @@ class MockProcessManager implements ProcessManager {
     bool runInShell = false,
     ProcessStartMode mode = ProcessStartMode.normal,
   }) {
-    if (!succeed) {
+    if (!runSucceeds) {
       final String executable = command[0];
-      final List<String> arguments =
-          command.length > 1 ? command.sublist(1) : <String>[];
+      final List<String> arguments = command.length > 1 ? command.sublist(1) : <String>[];
       throw ProcessException(executable, arguments);
     }
 
     commands = command;
     return Future<Process>.value(processFactory(command));
   }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => null;
 }
 
 /// A process that exits successfully with no output and ignores all input.
@@ -181,8 +178,8 @@ class MockProcess extends Mock implements Process {
     Stream<List<int>> stdin,
     this.stdout = const Stream<List<int>>.empty(),
     this.stderr = const Stream<List<int>>.empty(),
-  })  : exitCode = exitCode ?? Future<int>.value(0),
-        stdin = stdin ?? MemoryIOSink();
+  }) : exitCode = exitCode ?? Future<int>.value(0),
+       stdin = stdin ?? MemoryIOSink();
 
   @override
   final int pid;
@@ -208,8 +205,8 @@ class FakeProcess implements Process {
     Stream<List<int>> stdin,
     this.stdout = const Stream<List<int>>.empty(),
     this.stderr = const Stream<List<int>>.empty(),
-  })  : exitCode = exitCode ?? Future<int>.value(0),
-        stdin = stdin ?? MemoryIOSink();
+  }) : exitCode = exitCode ?? Future<int>.value(0),
+       stdin = stdin ?? MemoryIOSink();
 
   @override
   final int pid;
@@ -247,8 +244,7 @@ class PromptingProcess implements Process {
     await _stdoutController.close();
   }
 
-  final StreamController<List<int>> _stdoutController =
-      StreamController<List<int>>();
+  final StreamController<List<int>> _stdoutController = StreamController<List<int>>();
   final CompleterIOSink _stdin = CompleterIOSink();
 
   @override
@@ -278,7 +274,8 @@ class CompleterIOSink extends MemoryIOSink {
 
   @override
   void add(List<int> data) {
-    if (!_completer.isCompleted) _completer.complete(data);
+    if (!_completer.isCompleted)
+      _completer.complete(data);
     super.add(data);
   }
 }
@@ -315,12 +312,12 @@ class MemoryIOSink implements IOSink {
   }
 
   @override
-  void writeln([Object obj = '']) {
+  void writeln([ Object obj = '' ]) {
     add(encoding.encode('$obj\n'));
   }
 
   @override
-  void writeAll(Iterable<dynamic> objects, [String separator = '']) {
+  void writeAll(Iterable<dynamic> objects, [ String separator = '' ]) {
     bool addSeparator = false;
     for (dynamic object in objects) {
       if (addSeparator) {
@@ -332,7 +329,7 @@ class MemoryIOSink implements IOSink {
   }
 
   @override
-  void addError(dynamic error, [StackTrace stackTrace]) {
+  void addError(dynamic error, [ StackTrace stackTrace ]) {
     throw UnimplementedError();
   }
 
@@ -340,23 +337,62 @@ class MemoryIOSink implements IOSink {
   Future<void> get done => close();
 
   @override
-  Future<void> close() async {}
+  Future<void> close() async { }
 
   @override
-  Future<void> flush() async {}
+  Future<void> flush() async { }
+}
+
+class MemoryStdout extends MemoryIOSink implements io.Stdout {
+  @override
+  bool get hasTerminal => _hasTerminal;
+  set hasTerminal(bool value) {
+    assert(value != null);
+    _hasTerminal = value;
+  }
+  bool _hasTerminal = true;
+
+  @override
+  io.IOSink get nonBlocking => this;
+
+  @override
+  bool get supportsAnsiEscapes => _supportsAnsiEscapes;
+  set supportsAnsiEscapes(bool value) {
+    assert(value != null);
+    _supportsAnsiEscapes = value;
+  }
+  bool _supportsAnsiEscapes = true;
+
+  @override
+  int get terminalColumns {
+    if (_terminalColumns != null)
+      return _terminalColumns;
+    throw const io.StdoutException('unspecified mock value');
+  }
+  set terminalColumns(int value) => _terminalColumns = value;
+  int _terminalColumns;
+
+  @override
+  int get terminalLines {
+    if (_terminalLines != null)
+      return _terminalLines;
+    throw const io.StdoutException('unspecified mock value');
+  }
+  set terminalLines(int value) => _terminalLines = value;
+  int _terminalLines;
 }
 
 /// A Stdio that collects stdout and supports simulated stdin.
 class MockStdio extends Stdio {
-  final MemoryIOSink _stdout = MemoryIOSink();
+  final MemoryStdout _stdout = MemoryStdout();
   final MemoryIOSink _stderr = MemoryIOSink();
   final StreamController<List<int>> _stdin = StreamController<List<int>>();
 
   @override
-  IOSink get stdout => _stdout;
+  MemoryStdout get stdout => _stdout;
 
   @override
-  IOSink get stderr => _stderr;
+  MemoryIOSink get stderr => _stderr;
 
   @override
   Stream<List<int>> get stdin => _stdin.stream;

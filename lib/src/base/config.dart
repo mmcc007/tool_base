@@ -9,7 +9,8 @@ import 'platform.dart';
 
 class Config {
   Config([File configFile]) {
-    _configFile = configFile ?? fs.file(fs.path.join(_userHomeDir(), '.flutter_settings'));
+    _configFile = configFile ??
+        fs.file(fs.path.join(_userHomeDir(), '.flutter_settings'));
     if (_configFile.existsSync())
       _values = json.decode(_configFile.readAsStringSync());
   }
@@ -27,7 +28,7 @@ class Config {
 
   dynamic getValue(String key) => _values[key];
 
-  void setValue(String key, String value) {
+  void setValue(String key, Object value) {
     _values[key] = value;
     _flushValues();
   }
@@ -45,6 +46,7 @@ class Config {
 }
 
 String _userHomeDir() {
-  final String envKey = platform.operatingSystem == 'windows' ? 'APPDATA' : 'HOME';
+  final String envKey =
+      platform.operatingSystem == 'windows' ? 'APPDATA' : 'HOME';
   return platform.environment[envKey] ?? '.';
 }

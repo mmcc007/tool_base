@@ -52,7 +52,8 @@ class ShutdownStage implements Comparable<ShutdownStage> {
   int compareTo(ShutdownStage other) => priority.compareTo(other.priority);
 }
 
-Map<ShutdownStage, List<ShutdownHook>> _shutdownHooks = <ShutdownStage, List<ShutdownHook>>{};
+Map<ShutdownStage, List<ShutdownHook>> _shutdownHooks =
+    <ShutdownStage, List<ShutdownHook>>{};
 bool _shutdownHooksRunning = false;
 
 /// Registers a [ShutdownHook] to be executed before the VM exits.
@@ -83,8 +84,7 @@ Future<void> runShutdownHooks() async {
       printTrace('Shutdown hook priority ${stage.priority}');
       final List<ShutdownHook> hooks = _shutdownHooks.remove(stage);
       final List<Future<dynamic>> futures = <Future<dynamic>>[];
-      for (ShutdownHook shutdownHook in hooks)
-        futures.add(shutdownHook());
+      for (ShutdownHook shutdownHook in hooks) futures.add(shutdownHook());
       await Future.wait<dynamic>(futures);
     }
   } finally {
@@ -94,7 +94,8 @@ Future<void> runShutdownHooks() async {
   printTrace('Shutdown hooks complete');
 }
 
-Map<String, String> _environment(bool allowReentrantFlutter, [ Map<String, String> environment ]) {
+Map<String, String> _environment(bool allowReentrantFlutter,
+    [Map<String, String> environment]) {
   if (allowReentrantFlutter) {
     if (environment == null)
       environment = <String, String>{'FLUTTER_ALREADY_LOCKED': 'true'};
@@ -146,30 +147,27 @@ Future<int> runCommandAndStreamOutput(
     environment: environment,
   );
   final StreamSubscription<String> stdoutSubscription = process.stdout
-    .transform<String>(utf8.decoder)
-    .transform<String>(const LineSplitter())
-    .where((String line) => filter == null ? true : filter.hasMatch(line))
-    .listen((String line) {
-      if (mapFunction != null)
-        line = mapFunction(line);
-      if (line != null) {
-        final String message = '$prefix$line';
-        if (trace)
-          printTrace(message);
-        else
-          printStatus(message, wrap: false);
-      }
-    });
+      .transform<String>(utf8.decoder)
+      .transform<String>(const LineSplitter())
+      .where((String line) => filter == null || filter.hasMatch(line))
+      .listen((String line) {
+    if (mapFunction != null) line = mapFunction(line);
+    if (line != null) {
+      final String message = '$prefix$line';
+      if (trace)
+        printTrace(message);
+      else
+        printStatus(message, wrap: false);
+    }
+  });
   final StreamSubscription<String> stderrSubscription = process.stderr
-    .transform<String>(utf8.decoder)
-    .transform<String>(const LineSplitter())
-    .where((String line) => filter == null ? true : filter.hasMatch(line))
-    .listen((String line) {
-      if (mapFunction != null)
-        line = mapFunction(line);
-      if (line != null)
-        printError('$prefix$line', wrap: false);
-    });
+      .transform<String>(utf8.decoder)
+      .transform<String>(const LineSplitter())
+      .where((String line) => filter == null || filter.hasMatch(line))
+      .listen((String line) {
+    if (mapFunction != null) line = mapFunction(line);
+    if (line != null) printError('$prefix$line', wrap: false);
+  });
 
   // Wait for stdout to be fully processed
   // because process.exitCode may complete first causing flaky tests.
@@ -263,20 +261,27 @@ Future<RunResult> runCheckedAsync(
   return result;
 }
 
-bool exitsHappy(List<String> cli) {
+bool exitsHappy(
+  List<String> cli, {
+  Map<String, String> environment,
+}) {
   _traceCommand(cli);
   try {
-    return processManager.runSync(cli).exitCode == 0;
+    return processManager.runSync(cli, environment: environment).exitCode == 0;
   } catch (error) {
     printTrace('$cli failed with $error');
     return false;
   }
 }
 
-Future<bool> exitsHappyAsync(List<String> cli) async {
+Future<bool> exitsHappyAsync(
+  List<String> cli, {
+  Map<String, String> environment,
+}) async {
   _traceCommand(cli);
   try {
-    return (await processManager.run(cli)).exitCode == 0;
+    return (await processManager.run(cli, environment: environment)).exitCode ==
+        0;
   } catch (error) {
     printTrace('$cli failed with $error');
     return false;
@@ -294,16 +299,14 @@ String runCheckedSync(
   Map<String, String> environment,
   RunResultChecker whiteListFailures,
 }) {
-  return _runWithLoggingSync(
-    cmd,
-    workingDirectory: workingDirectory,
-    allowReentrantFlutter: allowReentrantFlutter,
-    hideStdout: hideStdout,
-    checked: true,
-    noisyErrors: true,
-    environment: environment,
-    whiteListFailures: whiteListFailures
-  );
+  return _runWithLoggingSync(cmd,
+      workingDirectory: workingDirectory,
+      allowReentrantFlutter: allowReentrantFlutter,
+      hideStdout: hideStdout,
+      checked: true,
+      noisyErrors: true,
+      environment: environment,
+      whiteListFailures: whiteListFailures);
 }
 
 /// Run cmd and return stdout.
@@ -319,7 +322,7 @@ String runSync(
   );
 }
 
-void _traceCommand(List<String> args, { String workingDirectory }) {
+void _traceCommand(List<String> args, {String workingDirectory}) {
   final String argsText = args.join(' ');
   if (workingDirectory == null) {
     printTrace('executing: $argsText');
@@ -368,11 +371,9 @@ String _runWithLoggingSync(
         printTrace(results.stderr.trim());
     }
 
-    if (throwStandardErrorOnError)
-      throw results.stderr.trim();
+    if (throwStandardErrorOnError) throw results.stderr.trim();
 
-    if (checked)
-      throw 'Exit code ${results.exitCode} from: ${cmd.join(' ')}';
+    if (checked) throw 'Exit code ${results.exitCode} from: ${cmd.join(' ')}';
   }
 
   return results.stdout.trim();
@@ -392,8 +393,8 @@ class ProcessExit implements Exception {
 
 class RunResult {
   RunResult(this.processResult, this._command)
-    : assert(_command != null),
-      assert(_command.isNotEmpty);
+      : assert(_command != null),
+        assert(_command.isNotEmpty);
 
   final ProcessResult processResult;
 
@@ -406,10 +407,8 @@ class RunResult {
   @override
   String toString() {
     final StringBuffer out = StringBuffer();
-    if (processResult.stdout.isNotEmpty)
-      out.writeln(processResult.stdout);
-    if (processResult.stderr.isNotEmpty)
-      out.writeln(processResult.stderr);
+    if (processResult.stdout.isNotEmpty) out.writeln(processResult.stdout);
+    if (processResult.stderr.isNotEmpty) out.writeln(processResult.stderr);
     return out.toString().trimRight();
   }
 

@@ -26,7 +26,8 @@
 /// increase the API surface that we have to test in Flutter tools, and the APIs
 /// in `dart:io` can sometimes be hard to use in tests.
 import 'dart:async';
-import 'dart:io' as io show exit, IOSink, ProcessSignal, stderr, stdin, stdout;
+import 'dart:io' as io
+    show exit, IOSink, Process, ProcessSignal, stderr, stdin, Stdout, stdout;
 
 import 'package:meta/meta.dart';
 
@@ -47,8 +48,8 @@ export 'dart:io'
         HttpClient,
         HttpClientRequest,
         HttpClientResponse,
-        // TODO(tvolkert): Uncomment (flutter/flutter#33791)
-        //HttpClientResponseCompressionState,
+        HttpClientResponseCompressionState,
+        HttpException,
         HttpHeaders,
         HttpRequest,
         HttpServer,
@@ -72,6 +73,7 @@ export 'dart:io'
         Stdin,
         StdinException,
         // stdout,           NO! Use `io.dart`
+        Stdout,
         Socket,
         SocketException,
         systemEncoding,
@@ -98,10 +100,11 @@ ExitFunction get exit => _exitFunction;
 /// Sets the [exit] function to a function that throws an exception rather
 /// than exiting the process; this is intended for testing purposes.
 @visibleForTesting
-void setExitFunctionForTests([ ExitFunction exitFunction ]) {
-  _exitFunction = exitFunction ?? (int exitCode) {
-    throw ProcessExit(exitCode, immediate: true);
-  };
+void setExitFunctionForTests([ExitFunction exitFunction]) {
+  _exitFunction = exitFunction ??
+      (int exitCode) {
+        throw ProcessExit(exitCode, immediate: true);
+      };
 }
 
 /// Restores the [exit] function to the `dart:io` implementation.
@@ -115,22 +118,45 @@ void restoreExitFunction() {
 /// Listening on signals that don't exist on the current platform is just a
 /// no-op. This is in contrast to [io.ProcessSignal], where listening to
 /// non-existent signals throws an exception.
-class ProcessSignal implements io.ProcessSignal {
+///
+/// This class does NOT implement io.ProcessSignal, because that class uses
+/// private fields. This means it cannot be used with, e.g., [Process.killPid].
+/// Alternative implementations of the relevant methods that take
+/// [ProcessSignal] instances are available on this class (e.g. "send").
+class ProcessSignal {
   @visibleForTesting
   const ProcessSignal(this._delegate);
 
-  static const ProcessSignal SIGWINCH = _PosixProcessSignal._(io.ProcessSignal.sigwinch);
-  static const ProcessSignal SIGTERM = _PosixProcessSignal._(io.ProcessSignal.sigterm);
-  static const ProcessSignal SIGUSR1 = _PosixProcessSignal._(io.ProcessSignal.sigusr1);
-  static const ProcessSignal SIGUSR2 = _PosixProcessSignal._(io.ProcessSignal.sigusr2);
-  static const ProcessSignal SIGINT =  ProcessSignal(io.ProcessSignal.sigint);
-  static const ProcessSignal SIGKILL =  ProcessSignal(io.ProcessSignal.sigkill);
+  static const ProcessSignal SIGWINCH =
+      _PosixProcessSignal._(io.ProcessSignal.sigwinch);
+  static const ProcessSignal SIGTERM =
+      _PosixProcessSignal._(io.ProcessSignal.sigterm);
+  static const ProcessSignal SIGUSR1 =
+      _PosixProcessSignal._(io.ProcessSignal.sigusr1);
+  static const ProcessSignal SIGUSR2 =
+      _PosixProcessSignal._(io.ProcessSignal.sigusr2);
+  static const ProcessSignal SIGINT = ProcessSignal(io.ProcessSignal.sigint);
+  static const ProcessSignal SIGKILL = ProcessSignal(io.ProcessSignal.sigkill);
 
   final io.ProcessSignal _delegate;
 
-  @override
   Stream<ProcessSignal> watch() {
-    return _delegate.watch().map<ProcessSignal>((io.ProcessSignal signal) => this);
+    return _delegate
+        .watch()
+        .map<ProcessSignal>((io.ProcessSignal signal) => this);
+  }
+
+  /// Sends the signal to the given process (identified by pid).
+  ///
+  /// Returns true if the signal was delivered, false otherwise.
+  ///
+  /// On Windows, this can only be used with [ProcessSignal.SIGTERM], which
+  /// terminates the process.
+  ///
+  /// This is implemented by sending the signal using [Process.killPid].
+  bool send(int pid) {
+    assert(!platform.isWindows || this == ProcessSignal.SIGTERM);
+    return io.Process.killPid(pid, _delegate);
   }
 
   @override
@@ -141,13 +167,12 @@ class ProcessSignal implements io.ProcessSignal {
 ///
 /// Listening to a [_PosixProcessSignal] is a no-op on Windows.
 class _PosixProcessSignal extends ProcessSignal {
-
-  const _PosixProcessSignal._(io.ProcessSignal wrappedSignal) : super(wrappedSignal);
+  const _PosixProcessSignal._(io.ProcessSignal wrappedSignal)
+      : super(wrappedSignal);
 
   @override
   Stream<ProcessSignal> watch() {
-    if (platform.isWindows)
-      return const Stream<ProcessSignal>.empty();
+    if (platform.isWindows) return const Stream<ProcessSignal>.empty();
     return super.watch();
   }
 }
@@ -156,16 +181,16 @@ class Stdio {
   const Stdio();
 
   Stream<List<int>> get stdin => io.stdin;
-  io.IOSink get stdout => io.stdout;
+  io.Stdout get stdout => io.stdout;
   io.IOSink get stderr => io.stderr;
 
   bool get hasTerminal => io.stdout.hasTerminal;
   int get terminalColumns => hasTerminal ? io.stdout.terminalColumns : null;
   int get terminalLines => hasTerminal ? io.stdout.terminalLines : null;
-  bool get supportsAnsiEscapes => hasTerminal ? io.stdout.supportsAnsiEscapes : false;
+  bool get supportsAnsiEscapes => hasTerminal && io.stdout.supportsAnsiEscapes;
 }
 
-Stdio get stdio => context.get<Stdio>();
-io.IOSink get stdout => stdio.stdout;
+Stdio get stdio => context.get<Stdio>() ?? const Stdio();
+io.Stdout get stdout => stdio.stdout;
 Stream<List<int>> get stdin => stdio.stdin;
 io.IOSink get stderr => stdio.stderr;

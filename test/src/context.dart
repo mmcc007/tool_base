@@ -46,8 +46,7 @@ void testUsingContext(
   Map<Type, Generator> overrides = const <Type, Generator>{},
   bool initializeFlutterRoot = true,
   String testOn,
-  bool
-      skip, // should default to `false`, but https://github.com/dart-lang/test/issues/545 doesn't allow this
+  bool skip, // should default to `false`, but https://github.com/dart-lang/test/issues/545 doesn't allow this
 }) {
   // Ensure we don't rely on the default [Config] constructor which will
   // leak a sticky $HOME/.flutter_settings behind!
@@ -59,10 +58,10 @@ void testUsingContext(
     }
   });
   Config buildConfig(FileSystem fs) {
-    configDir =
-        fs.systemTempDirectory.createTempSync('flutter_config_dir_test.');
-    final File settingsFile =
-        fs.file(fs.path.join(configDir.path, '.flutter_settings'));
+    configDir = fs.systemTempDirectory.createTempSync('flutter_config_dir_test.');
+    final File settingsFile = fs.file(
+      fs.path.join(configDir.path, '.flutter_settings')
+    );
     return Config(settingsFile);
   }
 
@@ -83,16 +82,15 @@ void testUsingContext(
 //          },
           OutputPreferences: () => OutputPreferences(showColor: false),
           Logger: () => BufferLogger(),
-          OperatingSystemUtils: () => MockOperatingSystemUtils(),
+          OperatingSystemUtils: () => FakeOperatingSystemUtils(),
 //          SimControl: () => MockSimControl(),
-//          Usage: () => MockUsage(),
+//          Usage: () => FakeUsage(),
 //          XcodeProjectInterpreter: () => MockXcodeProjectInterpreter(),
           FileSystem: () => LocalFileSystemBlockingSetCurrentDirectory(),
           TimeoutConfiguration: () => const TimeoutConfiguration(),
         },
         body: () {
           final String flutterRoot = getFlutterRoot();
-
           return runZoned<Future<dynamic>>(() {
             try {
               return context.run<dynamic>(
@@ -123,16 +121,15 @@ void testUsingContext(
         },
       );
     });
-  },
-      timeout: timeout ?? const Timeout(Duration(seconds: 60)),
-      testOn: testOn,
-      skip: skip);
+  }, timeout: timeout ?? const Timeout(Duration(seconds: 60)),
+      testOn: testOn, skip: skip);
 }
 
 void _printBufferedErrors(AppContext testContext) {
   if (testContext.get<Logger>() is BufferLogger) {
     final BufferLogger bufferLogger = testContext.get<Logger>();
-    if (bufferLogger.errorText.isNotEmpty) print(bufferLogger.errorText);
+    if (bufferLogger.errorText.isNotEmpty)
+      print(bufferLogger.errorText);
     bufferLogger.clear();
   }
 }
@@ -226,9 +223,12 @@ void _printBufferedErrors(AppContext testContext) {
 //  }
 //}
 
-class MockOperatingSystemUtils implements OperatingSystemUtils {
+class FakeOperatingSystemUtils implements OperatingSystemUtils {
   @override
   ProcessResult makeExecutable(File file) => null;
+
+  @override
+  void chmod(FileSystemEntity entity, String mode) { }
 
   @override
   File which(String execName) => null;
@@ -240,16 +240,16 @@ class MockOperatingSystemUtils implements OperatingSystemUtils {
   File makePipe(String path) => null;
 
   @override
-  void zip(Directory data, File zipFile) {}
+  void zip(Directory data, File zipFile) { }
 
   @override
-  void unzip(File file, Directory targetDirectory) {}
+  void unzip(File file, Directory targetDirectory) { }
 
   @override
   bool verifyZip(File file) => true;
 
   @override
-  void unpack(File gzippedTarFile, Directory targetDirectory) {}
+  void unpack(File gzippedTarFile, Directory targetDirectory) { }
 
   @override
   bool verifyGzip(File gzippedFile) => true;
@@ -266,7 +266,7 @@ class MockOperatingSystemUtils implements OperatingSystemUtils {
 
 //class MockIOSSimulatorUtils extends Mock implements IOSSimulatorUtils {}
 //
-//class MockUsage implements Usage {
+//class FakeUsage implements Usage {
 //  @override
 //  bool get isFirstRun => false;
 //
@@ -297,7 +297,7 @@ class MockOperatingSystemUtils implements OperatingSystemUtils {
 //      {String label}) {}
 //
 //  @override
-//  void sendException(dynamic exception, StackTrace trace) {}
+//  void sendException(dynamic exception) {}
 //
 //  @override
 //  Stream<Map<String, dynamic>> get onSend => null;
@@ -309,7 +309,7 @@ class MockOperatingSystemUtils implements OperatingSystemUtils {
 //  void printWelcome() {}
 //}
 //
-//class MockXcodeProjectInterpreter implements XcodeProjectInterpreter {
+//class FakeXcodeProjectInterpreter implements XcodeProjectInterpreter {
 //  @override
 //  bool get isInstalled => true;
 //
@@ -338,8 +338,12 @@ class MockOperatingSystemUtils implements OperatingSystemUtils {
 //}
 //
 //class MockFlutterVersion extends Mock implements FlutterVersion {
+//  MockFlutterVersion({bool isStable = false}) : _isStable = isStable;
+//
+//  final bool _isStable;
+//
 //  @override
-//  bool get isStable => false;
+//  bool get isMaster => !_isStable;
 //}
 //
 //class MockClock extends Mock implements SystemClock {}
@@ -347,6 +351,8 @@ class MockOperatingSystemUtils implements OperatingSystemUtils {
 class MockHttpClient extends Mock implements HttpClient {}
 
 class LocalFileSystemBlockingSetCurrentDirectory extends LocalFileSystem {
+  const LocalFileSystemBlockingSetCurrentDirectory();
+
   @override
   set currentDirectory(dynamic value) {
     throw 'fs.currentDirectory should not be set on the local file system during '

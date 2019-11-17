@@ -54,12 +54,10 @@ String getFlutterRoot() {
       scriptUri = platform.script;
       break;
     case 'data':
-      final RegExp flutterTools = RegExp(
-          r'(file://[^"]*[/\\]flutter_tools[/\\][^"]+\.dart)',
-          multiLine: true);
-      final Match match =
-          flutterTools.firstMatch(Uri.decodeFull(platform.script.path));
-      if (match == null) throw invalidScript();
+      final RegExp flutterTools = RegExp(r'(file://[^"]*[/\\]flutter_tools[/\\][^"]+\.dart)', multiLine: true);
+      final Match match = flutterTools.firstMatch(Uri.decodeFull(platform.script.path));
+      if (match == null)
+        throw invalidScript();
       scriptUri = Uri.parse(match.group(1));
       break;
     default:
@@ -68,7 +66,8 @@ String getFlutterRoot() {
 
   final List<String> parts = fs.path.split(fs.path.fromUri(scriptUri));
   final int toolsIndex = parts.indexOf('flutter_tools');
-  if (toolsIndex == -1) throw invalidScript();
+  if (toolsIndex == -1)
+    throw invalidScript();
   final String toolsPath = fs.path.joinAll(parts.sublist(0, toolsIndex + 1));
   return fs.path.normalize(fs.path.join(toolsPath, '..', '..'));
 }
@@ -90,7 +89,7 @@ void updateFileModificationTime(
 }
 
 /// Matcher for functions that throw [ToolExit].
-Matcher throwsToolExit({int exitCode, Pattern message}) {
+Matcher throwsToolExit({ int exitCode, Pattern message }) {
   Matcher matcher = isToolExit;
   if (exitCode != null)
     matcher = allOf(matcher, (ToolExit e) => e.exitCode == exitCode);
@@ -103,11 +102,10 @@ Matcher throwsToolExit({int exitCode, Pattern message}) {
 final Matcher isToolExit = isInstanceOf<ToolExit>();
 
 /// Matcher for functions that throw [ProcessExit].
-Matcher throwsProcessExit([dynamic exitCode]) {
+Matcher throwsProcessExit([ dynamic exitCode ]) {
   return exitCode == null
       ? throwsA(isProcessExit)
-      : throwsA(
-          allOf(isProcessExit, (ProcessExit e) => e.exitCode == exitCode));
+      : throwsA(allOf(isProcessExit, (ProcessExit e) => e.exitCode == exitCode));
 }
 
 /// Matcher for [ProcessExit]s.
@@ -133,3 +131,14 @@ const Timeout allowForRemotePubInvocation = Timeout.factor(10.0);
 /// Test case timeout for tests involving creating a Flutter project with
 /// `--no-pub`. Use [allowForRemotePubInvocation] when creation involves `pub`.
 const Timeout allowForCreateFlutterProject = Timeout.factor(3.0);
+
+Future<void> expectToolExitLater(Future<dynamic> future, Matcher messageMatcher) async {
+  try {
+    await future;
+    fail('ToolExit expected, but nothing thrown');
+  } on ToolExit catch(e) {
+    expect(e.message, messageMatcher);
+  } catch(e, trace) {
+    fail('ToolExit expected, got $e\n$trace');
+  }
+}
