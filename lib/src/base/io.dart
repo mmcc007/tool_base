@@ -26,8 +26,7 @@
 /// increase the API surface that we have to test in Flutter tools, and the APIs
 /// in `dart:io` can sometimes be hard to use in tests.
 import 'dart:async';
-import 'dart:io' as io
-    show exit, IOSink, Process, ProcessSignal, stderr, stdin, Stdout, stdout;
+import 'dart:io' as io show exit, IOSink, Process, ProcessSignal, stderr, stdin, Stdout, stdout;
 
 import 'package:meta/meta.dart';
 
@@ -100,11 +99,10 @@ ExitFunction get exit => _exitFunction;
 /// Sets the [exit] function to a function that throws an exception rather
 /// than exiting the process; this is intended for testing purposes.
 @visibleForTesting
-void setExitFunctionForTests([ExitFunction exitFunction]) {
-  _exitFunction = exitFunction ??
-      (int exitCode) {
-        throw ProcessExit(exitCode, immediate: true);
-      };
+void setExitFunctionForTests([ ExitFunction exitFunction ]) {
+  _exitFunction = exitFunction ?? (int exitCode) {
+    throw ProcessExit(exitCode, immediate: true);
+  };
 }
 
 /// Restores the [exit] function to the `dart:io` implementation.
@@ -127,23 +125,17 @@ class ProcessSignal {
   @visibleForTesting
   const ProcessSignal(this._delegate);
 
-  static const ProcessSignal SIGWINCH =
-      _PosixProcessSignal._(io.ProcessSignal.sigwinch);
-  static const ProcessSignal SIGTERM =
-      _PosixProcessSignal._(io.ProcessSignal.sigterm);
-  static const ProcessSignal SIGUSR1 =
-      _PosixProcessSignal._(io.ProcessSignal.sigusr1);
-  static const ProcessSignal SIGUSR2 =
-      _PosixProcessSignal._(io.ProcessSignal.sigusr2);
-  static const ProcessSignal SIGINT = ProcessSignal(io.ProcessSignal.sigint);
-  static const ProcessSignal SIGKILL = ProcessSignal(io.ProcessSignal.sigkill);
+  static const ProcessSignal SIGWINCH = _PosixProcessSignal._(io.ProcessSignal.sigwinch);
+  static const ProcessSignal SIGTERM = _PosixProcessSignal._(io.ProcessSignal.sigterm);
+  static const ProcessSignal SIGUSR1 = _PosixProcessSignal._(io.ProcessSignal.sigusr1);
+  static const ProcessSignal SIGUSR2 = _PosixProcessSignal._(io.ProcessSignal.sigusr2);
+  static const ProcessSignal SIGINT =  ProcessSignal(io.ProcessSignal.sigint);
+  static const ProcessSignal SIGKILL =  ProcessSignal(io.ProcessSignal.sigkill);
 
   final io.ProcessSignal _delegate;
 
   Stream<ProcessSignal> watch() {
-    return _delegate
-        .watch()
-        .map<ProcessSignal>((io.ProcessSignal signal) => this);
+    return _delegate.watch().map<ProcessSignal>((io.ProcessSignal signal) => this);
   }
 
   /// Sends the signal to the given process (identified by pid).
@@ -167,12 +159,13 @@ class ProcessSignal {
 ///
 /// Listening to a [_PosixProcessSignal] is a no-op on Windows.
 class _PosixProcessSignal extends ProcessSignal {
-  const _PosixProcessSignal._(io.ProcessSignal wrappedSignal)
-      : super(wrappedSignal);
+
+  const _PosixProcessSignal._(io.ProcessSignal wrappedSignal) : super(wrappedSignal);
 
   @override
   Stream<ProcessSignal> watch() {
-    if (platform.isWindows) return const Stream<ProcessSignal>.empty();
+    if (platform.isWindows)
+      return const Stream<ProcessSignal>.empty();
     return super.watch();
   }
 }
