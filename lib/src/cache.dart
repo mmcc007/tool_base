@@ -75,7 +75,7 @@ class DevelopmentArtifact {
 class Cache {
   /// [rootOverride] is configurable for testing.
   /// [artifacts] is configurable for testing.
-  Cache({ Directory rootOverride, List<CachedArtifact> artifacts }) : _rootOverride = rootOverride {
+  Cache(this.cacheDir, { Directory rootOverride, List<CachedArtifact> artifacts }) : _rootOverride = rootOverride {
     if (artifacts == null) {
       _artifacts.add(MaterialFonts(this));
       _artifacts.add(AndroidEngineArtifacts(this));
@@ -96,6 +96,8 @@ class Cache {
       _artifacts.addAll(artifacts);
     }
   }
+
+  final String cacheDir;
 
   static const List<String> _hostsBlockedInChina = <String> [
     'storage.googleapis.com',
@@ -138,15 +140,17 @@ class Cache {
   /// Normally the lock will be held until the process exits (this uses normal
   /// POSIX flock semantics). Long-lived commands should release the lock by
   /// calling [Cache.releaseLockEarly] once they are no longer touching the cache.
-  static Future<void> lock() async {
+  Future<void> lock() async {
     if (!_lockEnabled)
       return;
     assert(_lock == null);
     final File lockFile =
 //    fs.file(fs.path.join(flutterRoot, 'bin', 'cache', 'lockfile'));
-    fs.file(fs.path.join(flutterRoot, '.tool_base', 'cache', 'lockfile'));
+    fs.file(fs.path.join(getRoot().path, 'lockfile'));
 //    fs.file(fs.path.join(fs.systemTempDirectory.path, '.toollockfile'));
     try {
+      if (!lockFile.existsSync())
+        lockFile.createSync(recursive: true);
       _lock = lockFile.openSync(mode: FileMode.write);
     } on FileSystemException catch (e) {
       printError('Failed to open or create the artifact cache lockfile: "$e"');
@@ -215,10 +219,15 @@ class Cache {
 
   /// Return the top-level directory in the cache; this is `bin/cache`.
   Directory getRoot() {
+    String path;
     if (_rootOverride != null)
-      return fs.directory(fs.path.join(_rootOverride.path, 'bin', 'cache'));
+      path = fs.path.join(_rootOverride.path, cacheDir, 'bin', 'cache');
     else
-      return fs.directory(fs.path.join(flutterRoot, 'bin', 'cache'));
+      path = fs.path.join(flutterRoot, cacheDir, 'bin', 'cache');
+    final Directory dir = fs.directory(path);
+    if (!dir.existsSync())
+      dir.create(recursive: true);
+    return dir;
   }
 
   /// Return a directory in the cache dir. For `pkg`, this will return `bin/cache/pkg`.

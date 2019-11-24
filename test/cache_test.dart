@@ -20,6 +20,8 @@ import 'src/common.dart';
 import 'src/context.dart';
 import 'src/testbed.dart';
 
+const String cacheDir='cache';
+
 void main() {
   group('$Cache.checkLockAcquired', () {
     MockFileSystem mockFileSystem;
@@ -56,10 +58,14 @@ void main() {
     testUsingContext('should not throw when lock is acquired', () async {
       final Directory mockDirectory = MockDirectory();
       when(mockFileSystem.file(argThat(endsWith('lockfile')))).thenReturn(mockFile);
+      when(mockFile.existsSync()).thenReturn(true);
       when(mockFile.openSync(mode: anyNamed('mode'))).thenReturn(mockRandomAccessFile);
       when(mockFileSystem.systemTempDirectory).thenReturn(mockDirectory);
+      when(mockFileSystem.directory(any)).thenReturn(mockDirectory);
+      when(mockDirectory.existsSync()).thenReturn(true);
       when(mockDirectory.path).thenReturn('/');
-      await Cache.lock();
+      final Cache cache=Cache(cacheDir);
+      await cache.lock();
       Cache.checkLockAcquired();
       Cache.releaseLockEarly();
     }, overrides: <Type, Generator>{
@@ -69,10 +75,13 @@ void main() {
     testUsingContext('throws tool exit when lockfile open fails', () async {
       final Directory mockDirectory = MockDirectory();
       when(mockFileSystem.file(argThat(endsWith('lockfile')))).thenReturn(mockFile);
+      when(mockFile.existsSync()).thenReturn(true);
       when(mockFile.openSync(mode: anyNamed('mode'))).thenThrow(const FileSystemException());
       when(mockFileSystem.systemTempDirectory).thenReturn(mockDirectory);
+      when(mockFileSystem.directory(any)).thenReturn(mockDirectory);
+      when(mockDirectory.existsSync()).thenReturn(true);
       when(mockDirectory.path).thenReturn('/');
-      expect(() async => await Cache.lock(), throwsA(isA<ToolExit>()));
+      expect(() async => await Cache(cacheDir).lock(), throwsA(isA<ToolExit>()));
     }, overrides: <Type, Generator>{
       FileSystem: () => mockFileSystem,
     });
@@ -125,7 +134,7 @@ void main() {
       final CachedArtifact artifact2 = MockCachedArtifact();
       when(artifact1.isUpToDate()).thenReturn(true);
       when(artifact2.isUpToDate()).thenReturn(false);
-      final Cache cache = Cache(artifacts: <CachedArtifact>[artifact1, artifact2]);
+      final Cache cache = Cache(cacheDir, artifacts: <CachedArtifact>[artifact1, artifact2]);
       expect(cache.isUpToDate(), isFalse);
     });
     test('should be up to date, if all cached artifacts are', () {
@@ -133,7 +142,7 @@ void main() {
       final CachedArtifact artifact2 = MockCachedArtifact();
       when(artifact1.isUpToDate()).thenReturn(true);
       when(artifact2.isUpToDate()).thenReturn(true);
-      final Cache cache = Cache(artifacts: <CachedArtifact>[artifact1, artifact2]);
+      final Cache cache = Cache(cacheDir, artifacts: <CachedArtifact>[artifact1, artifact2]);
       expect(cache.isUpToDate(), isTrue);
     });
     test('should update cached artifacts which are not up to date', () async {
@@ -141,7 +150,7 @@ void main() {
       final CachedArtifact artifact2 = MockCachedArtifact();
       when(artifact1.isUpToDate()).thenReturn(true);
       when(artifact2.isUpToDate()).thenReturn(false);
-      final Cache cache = Cache(artifacts: <CachedArtifact>[artifact1, artifact2]);
+      final Cache cache = Cache(cacheDir, artifacts: <CachedArtifact>[artifact1, artifact2]);
       await cache.updateAll(<DevelopmentArtifact>{});
       verifyNever(artifact1.update(<DevelopmentArtifact>{}));
       verify(artifact2.update(<DevelopmentArtifact>{}));
@@ -153,7 +162,7 @@ void main() {
       when(artifact1.dyLdLibPath).thenReturn('/path/to/alpha:/path/to/beta');
       when(artifact2.dyLdLibPath).thenReturn('/path/to/gamma:/path/to/delta:/path/to/epsilon');
       when(artifact3.dyLdLibPath).thenReturn(''); // Empty output
-      final Cache cache = Cache(artifacts: <CachedArtifact>[artifact1, artifact2, artifact3]);
+      final Cache cache = Cache(cacheDir, artifacts: <CachedArtifact>[artifact1, artifact2, artifact3]);
       expect(cache.dyLdLibEntry.key, 'DYLD_LIBRARY_PATH');
       expect(
         cache.dyLdLibEntry.value,
@@ -173,7 +182,7 @@ void main() {
         'Connection reset by peer',
         address: address,
       ));
-      final Cache cache = Cache(artifacts: <CachedArtifact>[artifact1, artifact2]);
+      final Cache cache = Cache(cacheDir, artifacts: <CachedArtifact>[artifact1, artifact2]);
       try {
         await cache.updateAll(<DevelopmentArtifact>{});
         fail('Mock thrown exception expected');
