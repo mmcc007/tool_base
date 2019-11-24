@@ -8,6 +8,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file/memory.dart';
+import 'package:tool_base/src/cache.dart';
 import 'package:tool_base/tool_base.dart';
 //import 'package:flutter_tools/src/base/context.dart';
 //import 'package:flutter_tools/src/base/file_system.dart';
@@ -93,7 +94,7 @@ class Testbed {
       ...?overrides,
     };
     // Cache the original flutter root to restore after the test case.
-//    final String originalFlutterRoot = Cache.flutterRoot;
+    final String originalFlutterRoot = Cache.flutterRoot;
     // Track pending timers to verify that they were correctly cleaned up.
     final Map<Timer, StackTrace> timers = <Timer, StackTrace>{};
 
@@ -114,12 +115,12 @@ class Testbed {
               return result;
             }),
             body: () async {
-//              Cache.flutterRoot = '';
+              Cache.flutterRoot = '';
               if (_setup != null) {
                 await _setup();
               }
               await test();
-//              Cache.flutterRoot = originalFlutterRoot;
+              Cache.flutterRoot = originalFlutterRoot;
               for (MapEntry<Timer, StackTrace> entry in timers.entries) {
                 if (entry.key.isActive) {
                   throw StateError(

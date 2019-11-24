@@ -24,6 +24,8 @@ import 'package:tool_base/src/base/terminal.dart';
 //import 'package:tool_base/src/version.dart';
 import 'package:meta/meta.dart';
 import 'package:mockito/mockito.dart';
+import 'package:tool_base/src/base/time.dart';
+import 'package:tool_base/src/cache.dart';
 
 import 'common.dart';
 import 'context_runner.dart';
@@ -40,14 +42,14 @@ typedef ContextInitializer = void Function(AppContext testContext);
 
 @isTest
 void testUsingContext(
-  String description,
-  dynamic testMethod(), {
-  Timeout timeout,
-  Map<Type, Generator> overrides = const <Type, Generator>{},
-  bool initializeFlutterRoot = true,
-  String testOn,
-  bool skip, // should default to `false`, but https://github.com/dart-lang/test/issues/545 doesn't allow this
-}) {
+    String description,
+    dynamic testMethod(), {
+      Timeout timeout,
+      Map<Type, Generator> overrides = const <Type, Generator>{},
+      bool initializeFlutterRoot = true,
+      String testOn,
+      bool skip, // should default to `false`, but https://github.com/dart-lang/test/issues/545 doesn't allow this
+    }) {
   // Ensure we don't rely on the default [Config] constructor which will
   // leak a sticky $HOME/.flutter_settings behind!
   Directory configDir;
@@ -60,7 +62,7 @@ void testUsingContext(
   Config buildConfig(FileSystem fs) {
     configDir = fs.systemTempDirectory.createTempSync('flutter_config_dir_test.');
     final File settingsFile = fs.file(
-      fs.path.join(configDir.path, '.flutter_settings')
+        fs.path.join(configDir.path, '.flutter_settings')
     );
     return Config(settingsFile);
   }
@@ -71,13 +73,13 @@ void testUsingContext(
         name: 'mocks',
         overrides: <Type, Generator>{
           Config: () => buildConfig(fs),
-//          DeviceManager: () => MockDeviceManager(),
-//          Doctor: () => MockDoctor(),
+//          DeviceManager: () => FakeDeviceManager(),
+//          Doctor: () => FakeDoctor(),
 //          FlutterVersion: () => MockFlutterVersion(),
           HttpClient: () => MockHttpClient(),
 //          IOSSimulatorUtils: () {
 //            final MockIOSSimulatorUtils mock = MockIOSSimulatorUtils();
-//            when(mock.getAttachedDevices()).thenReturn(<IOSSimulator>[]);
+//            when(mock.getAttachedDevices()).thenAnswer((Invocation _) async => <IOSSimulator>[]);
 //            return mock;
 //          },
           OutputPreferences: () => OutputPreferences(showColor: false),
@@ -85,9 +87,10 @@ void testUsingContext(
           OperatingSystemUtils: () => FakeOperatingSystemUtils(),
 //          SimControl: () => MockSimControl(),
 //          Usage: () => FakeUsage(),
-//          XcodeProjectInterpreter: () => MockXcodeProjectInterpreter(),
-          FileSystem: () => LocalFileSystemBlockingSetCurrentDirectory(),
+//          XcodeProjectInterpreter: () => FakeXcodeProjectInterpreter(),
+          FileSystem: () => const LocalFileSystemBlockingSetCurrentDirectory(),
           TimeoutConfiguration: () => const TimeoutConfiguration(),
+//          PlistParser: () => FakePlistParser(),
         },
         body: () {
           final String flutterRoot = getFlutterRoot();
@@ -99,12 +102,11 @@ void testUsingContext(
                 overrides: overrides,
                 name: 'test-specific overrides',
                 body: () async {
-//                  if (initializeFlutterRoot) {
-//                    // Provide a sane default for the flutterRoot directory. Individual
-//                    // tests can override this either in the test or during setup.
-//                    Cache.flutterRoot ??= flutterRoot;
-//                  }
-
+                  if (initializeFlutterRoot) {
+                    // Provide a sane default for the flutterRoot directory. Individual
+                    // tests can override this either in the test or during setup.
+                    Cache.flutterRoot ??= flutterRoot;
+                  }
                   return await testMethod();
                 },
               );
@@ -345,8 +347,8 @@ class FakeOperatingSystemUtils implements OperatingSystemUtils {
 //  @override
 //  bool get isMaster => !_isStable;
 //}
-//
-//class MockClock extends Mock implements SystemClock {}
+
+class MockClock extends Mock implements SystemClock {}
 
 class MockHttpClient extends Mock implements HttpClient {}
 

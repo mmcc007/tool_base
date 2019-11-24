@@ -7,10 +7,10 @@ import 'base/config.dart';
 import 'base/context.dart';
 import 'base/logger.dart';
 import 'base/terminal.dart';
-//import 'cache.dart';
+import 'cache.dart';
 
 Logger get logger => context.get<Logger>();
-//Cache get cache => Cache.instance;
+Cache get cache => Cache.instance;
 Config get config => Config.instance;
 //Artifacts get artifacts => Artifacts.instance;
 

@@ -1,3 +1,7 @@
+## 1.9.5+2
+- Synced with 1.9.1+hotfix.6 stable
+- Added cache and net
+
 ## 1.9.5+1
 - Fixed analysis warnings.
 
