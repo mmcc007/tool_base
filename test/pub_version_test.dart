@@ -99,16 +99,36 @@ void main() {
       expect(version, savedVersion);
     }, overrides: <Type, Generator>{
       FileSystem: () => fs,
-      HttpClientFactory: () =>
-          () => MockHttpClient(200, result: jsonEncode({
+      HttpClientFactory: () => () => MockHttpClient(HttpStatus.ok,
+          result: jsonEncode({
             "scorecard": {
               "packageName": "sylph",
               "packageVersion": "0.7.0+2",
               "updated": "2019-11-21T22:31:32.194619Z",
               "packageVersionCreated": "2019-11-20T18:17:13.527154Z",
             }
-          }
-          )),
+          })),
+    });
+
+    testUsingContext('get version locally', () async {
+      const String settingsPath = 'settings';
+      final File settings = fs.file(settingsPath);
+      final DateTime now = DateTime.now();
+      const String latestVersion = '1.2.3';
+      settings.writeAsStringSync(jsonEncode({
+        PubVersion.kVersionDate: '$now',
+        PubVersion.kLatestVersion: latestVersion,
+      }));
+      final PubVersion pubVersion = PubVersion('sylph', settingsPath);
+      final String version = await pubVersion.getLatestVersion();
+      final String savedVersion =
+          jsonDecode(fs.file(settings).readAsStringSync())[PubVersion.kLatestVersion];
+      print(fs.file(settings).readAsStringSync());
+      expect(version, savedVersion);
+    }, overrides: <Type, Generator>{
+      FileSystem: () => fs,
+      HttpClientFactory: () =>
+          () => MockHttpClient(HttpStatus.badRequest, result: jsonEncode(null)),
     });
   });
 }
@@ -170,7 +190,6 @@ class PubVersion {
   }
 }
 
-
 class MockHttpClient implements HttpClient {
   MockHttpClient(this.statusCode, {this.result});
 
@@ -223,13 +242,15 @@ class MockHttpClientResponse implements HttpClientResponse {
 
   @override
   StreamSubscription<Uint8List> listen(
-      void onData(Uint8List event), {
-        Function onError,
-        void onDone(),
-        bool cancelOnError,
-      }) {
-    return Stream<Uint8List>.fromIterable(<Uint8List>[Uint8List.fromList(result.codeUnits)])
-        .listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+    void onData(Uint8List event), {
+    Function onError,
+    void onDone(),
+    bool cancelOnError,
+  }) {
+    return Stream<Uint8List>.fromIterable(
+            <Uint8List>[Uint8List.fromList(result.codeUnits)])
+        .listen(onData,
+            onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 
   @override
