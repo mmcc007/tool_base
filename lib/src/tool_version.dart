@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/file.dart';
-import 'package:tool_base/src/base/config.dart';
-import 'package:tool_base/src/base/file_system.dart';
-import 'package:tool_base/src/base/net.dart';
+
+import 'base/config.dart';
+import 'base/context.dart';
+import 'base/file_system.dart';
+import 'base/net.dart';
 
 /// A persistent version of a published package.
 ///
@@ -18,6 +20,8 @@ class ToolVersion {
   final String packageName;
   final String settingsPath;
   Uri _url;
+
+  static ToolVersion get instance => context.get<ToolVersion>();
 
 //  http.Client _client;
   File _file;
