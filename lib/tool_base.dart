@@ -22,3 +22,4 @@ export 'src/base/version.dart';
 export 'src/cache.dart';
 export 'src/convert.dart';
 export 'src/globals.dart';
+export 'src/tool_version.dart';
