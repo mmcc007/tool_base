@@ -4,18 +4,18 @@
 
 import 'dart:async';
 
+import 'package:file/file.dart';
 import 'package:meta/meta.dart';
-import 'package:tool_base/tool_base.dart';
 
-//import 'base/common.dart';
-//import 'base/context.dart';
-//import 'base/file_system.dart';
-//import 'base/io.dart' show SocketException;
-//import 'base/logger.dart';
-//import 'base/net.dart';
-//import 'base/os.dart';
-//import 'base/platform.dart';
-//import 'globals.dart';
+import 'base/common.dart';
+import 'base/context.dart';
+import 'base/file_system.dart';
+import 'base/io.dart' show SocketException;
+import 'base/logger.dart';
+import 'base/net.dart';
+import 'base/os.dart';
+import 'base/platform.dart';
+import 'globals.dart';
 
 /// A tag for a set of development artifacts that need to be cached.
 class DevelopmentArtifact {
