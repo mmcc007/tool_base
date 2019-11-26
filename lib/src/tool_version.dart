@@ -46,26 +46,28 @@ class ToolVersion {
   static const String kLatestVersion = 'latestVersion';
   static const String kVersionDate = 'versionDate';
 
-  Future<String> getLatestVersion() async =>
-      await _getVar(kLatestVersion, 'packageVersion');
+  Future<String> getLatestVersion({bool forceRemote = false}) async =>
+      await _getVar(kLatestVersion, 'packageVersion', forceRemote);
 
 //  void setVersion(String version) => config.setValue(kVersion, version);
 
-  Future<String> getVersionDate() async =>
-      await _getVar(kVersionDate, 'updated');
+  Future<String> getVersionDate({bool forceRemote = false}) async =>
+      await _getVar(kVersionDate, 'updated', forceRemote);
 
 //  void setVersionDate(String versionDate) =>
 //      config.setValue(kVersionDate, versionDate);
 
-  Future<String> _getVar(String varName, String metric) async {
-    String varValue = config.getValue(varName);
-    if (varValue == null) {
+  Future<String> _getVar(String varName, String metric, bool forceRemote) async {
+    if (forceRemote){
       final List<int> charCodes = await fetchUrl(url);
       final Map<String, dynamic> metrics =
       jsonDecode(String.fromCharCodes(charCodes));
-      varValue = metrics['scorecard'][metric];
+      final String varValue = metrics['scorecard'][metric];
+      // save locally ??
       config.setValue(varName, varValue);
+      return varValue;
+    } else {
+      return config.getValue(varName);
     }
-    return varValue;
   }
 }
