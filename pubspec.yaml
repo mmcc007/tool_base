@@ -14,6 +14,7 @@ dependencies:
   file: ^5.0.8
   platform: ^2.2.0
   process: ^3.0.9
+  pub_cache: ^0.2.3
 
 dev_dependencies:
   pedantic: ^1.0.0

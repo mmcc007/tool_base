@@ -29,7 +29,8 @@ void main() {
 
     testUsingContext('get version remotely', () async {
       final ToolVersion pubVersion = ToolVersion('sylph', 'settings');
-      final String version = await pubVersion.getLatestVersion(forceRemote: true);
+      final String version =
+          await pubVersion.getLatestVersion(forceRemote: true);
       final String savedVersion =
           jsonDecode(fs.file('settings').readAsStringSync())['latestVersion'];
       expect(version, savedVersion);
@@ -65,9 +66,14 @@ void main() {
       HttpClientFactory: () =>
           () => MockHttpClient(HttpStatus.badRequest, result: jsonEncode(null)),
     });
+
+    test('get installed version', () {
+      final ToolVersion toolVersion = ToolVersion('sylph', null);
+      final String version = toolVersion.getInstalledVersion();
+      expect(version, isNotNull);
+    });
   });
 }
-
 
 class MockHttpClient implements HttpClient {
   MockHttpClient(this.statusCode, {this.result});
