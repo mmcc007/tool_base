@@ -3,5 +3,6 @@ install:
   - pub global activate coverage 0.13.3
 script:
   - pub get
+  - export FLUTTER_ROOT='' # required by test setup (not used)
   - script/code_coverage.sh
 after_success: bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
