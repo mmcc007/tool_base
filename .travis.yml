@@ -1,6 +1,6 @@
 language: dart
 install:
-  - pub global activate coverage
+  - pub global activate coverage 0.13.3
 script:
   - pub get
   - script/code_coverage.sh
