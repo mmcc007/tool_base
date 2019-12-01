@@ -9,6 +9,7 @@ import 'base/config.dart';
 import 'base/context.dart';
 import 'base/file_system.dart';
 import 'base/net.dart';
+import 'cache.dart';
 
 /// A persistent version of a published package.
 ///
@@ -30,7 +31,7 @@ class ToolVersion {
 
 //  http.Client get client => _client ??= http.Client();
 
-  File get file => _file ??= fs.file(settingsPath);
+  File get file => _file ??= fs.file(fs.path.join(Cache.flutterRoot, settingsPath));
 
   Config get config => _config ??= Config(file);
 

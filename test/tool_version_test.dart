@@ -15,24 +15,31 @@ import 'package:file/memory.dart';
 import 'package:test/test.dart';
 import 'package:tool_base/src/base/file_system.dart';
 import 'package:tool_base/src/base/net.dart';
+import 'package:tool_base/src/cache.dart';
 import 'package:tool_base/src/tool_version.dart';
 
 import 'src/context.dart';
 
 void main() {
   group('ToolVersion', () {
+    const String settingsFileName = 'settings.json';
+    const String toolName = 'sylph';
     MemoryFileSystem fs;
 
     setUp(() {
       fs = MemoryFileSystem();
+      Cache.flutterRoot = '/';
+    });
+
+    tearDown((){
+      Cache.flutterRoot = null;
     });
 
     testUsingContext('get version remotely', () async {
-      final ToolVersion pubVersion = ToolVersion('sylph', 'settings');
-      final String version =
-          await pubVersion.getLatestVersion(forceRemote: true);
-      final String savedVersion =
-          jsonDecode(fs.file('settings').readAsStringSync())['latestVersion'];
+      final File settingsFile = fs.file(fs.path.join(Cache.flutterRoot, settingsFileName));
+      final ToolVersion toolVersion = ToolVersion(toolName, settingsFileName);
+      final String version = await toolVersion.getLatestVersion(forceRemote: true);
+      final String savedVersion = jsonDecode(settingsFile.readAsStringSync())['latestVersion'];
       expect(version, savedVersion);
     }, overrides: <Type, Generator>{
       FileSystem: () => fs,
@@ -56,15 +63,13 @@ void main() {
         ToolVersion.kVersionDate: '$now',
         ToolVersion.kLatestVersion: latestVersion,
       }));
-      final ToolVersion pubVersion = ToolVersion('sylph', settingsPath);
-      final String version = await pubVersion.getLatestVersion();
-      final String savedVersion = jsonDecode(
-          fs.file(settings).readAsStringSync())[ToolVersion.kLatestVersion];
+      final ToolVersion toolVersion = ToolVersion('sylph', settingsPath);
+      final String version = await toolVersion.getLatestVersion();
+      final String savedVersion = jsonDecode(fs.file(settings).readAsStringSync())[ToolVersion.kLatestVersion];
       expect(version, savedVersion);
     }, overrides: <Type, Generator>{
       FileSystem: () => fs,
-      HttpClientFactory: () =>
-          () => MockHttpClient(HttpStatus.badRequest, result: jsonEncode(null)),
+      HttpClientFactory: () => () => MockHttpClient(HttpStatus.badRequest, result: jsonEncode(null)),
     });
 
     test('get installed version', () {
