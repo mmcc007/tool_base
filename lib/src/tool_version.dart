@@ -31,7 +31,8 @@ class ToolVersion {
 
 //  http.Client get client => _client ??= http.Client();
 
-  File get file => _file ??= fs.file(fs.path.join(Cache.flutterRoot, settingsPath));
+  File get file =>
+      _file ??= fs.file(fs.path.join(Cache.flutterRoot, settingsPath));
 
   Config get config => _config ??= Config(file);
 
@@ -39,11 +40,11 @@ class ToolVersion {
   static const String _kPubDevBasePath = 'api/packages';
 
   Uri get url => _url ??= Uri(
-    scheme: 'https',
-    host: _kPubDevHost,
-    path: '$_kPubDevBasePath/$packageName/metrics',
-    query: 'pretty',
-  );
+        scheme: 'https',
+        host: _kPubDevHost,
+        path: '$_kPubDevBasePath/$packageName/metrics',
+        query: 'pretty',
+      );
 
   static const String kLatestVersion = 'latestVersion';
   static const String kVersionDate = 'versionDate';
@@ -53,17 +54,28 @@ class ToolVersion {
 
 //  void setVersion(String version) => config.setValue(kVersion, version);
 
-  Future<String> getVersionDate({bool forceRemote = false}) async =>
-      await _getVar(kVersionDate, 'updated', forceRemote);
+  Future<String> getVersionDate({bool forceRemote = false}) async {
+    String versionDate = await _getVar(kVersionDate, 'updated', forceRemote);
+    // hack, can't find real date
+    if (versionDate == null) {
+      versionDate = DateTime.now().toIso8601String();
+      config.setValue(kVersionDate, versionDate);
+    }
+    return versionDate;
+  }
 
 //  void setVersionDate(String versionDate) =>
 //      config.setValue(kVersionDate, versionDate);
 
-  Future<String> _getVar(String varName, String metric, bool forceRemote) async {
-    if (forceRemote){
+  Future<String> _getVar(
+    String varName,
+    String metric,
+    bool forceRemote,
+  ) async {
+    if (forceRemote) {
       final List<int> charCodes = await fetchUrl(url);
       final Map<String, dynamic> metrics =
-      jsonDecode(String.fromCharCodes(charCodes));
+          jsonDecode(String.fromCharCodes(charCodes));
       final String varValue = metrics['scorecard'][metric];
       // save locally ??
       config.setValue(varName, varValue);
@@ -73,14 +85,11 @@ class ToolVersion {
     }
   }
 
-  String getInstalledVersion(){
-    final PubCache cache = PubCache();
-    for (Application app in cache.getGlobalApplications()) {
-      if (app.name==packageName) {
-        return app.version.toString();
-      }
-    }
-    return null;
+  String getInstalledVersion() {
+    return PubCache()
+        .getGlobalApplications()
+        .firstWhere((app) => app.name == packageName, orElse: () => null)
+        .version
+        .toString();
   }
-
 }
