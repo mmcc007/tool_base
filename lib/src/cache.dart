@@ -75,7 +75,7 @@ class DevelopmentArtifact {
 class Cache {
   /// [rootOverride] is configurable for testing.
   /// [artifacts] is configurable for testing.
-  Cache(this.cacheDir, { Directory rootOverride, List<CachedArtifact> artifacts }) : _rootOverride = rootOverride {
+  Cache({ Directory rootOverride, List<CachedArtifact> artifacts }) : _rootOverride = rootOverride {
     if (artifacts == null) {
       _artifacts.add(MaterialFonts(this));
       _artifacts.add(AndroidEngineArtifacts(this));
@@ -96,8 +96,6 @@ class Cache {
       _artifacts.addAll(artifacts);
     }
   }
-
-  final String cacheDir;
 
   static const List<String> _hostsBlockedInChina = <String> [
     'storage.googleapis.com',
@@ -221,9 +219,9 @@ class Cache {
   Directory getRoot() {
     String path;
     if (_rootOverride != null)
-      path = fs.path.join(_rootOverride.path, cacheDir, 'bin', 'cache');
+      path = fs.path.join(_rootOverride.path, 'bin', 'cache');
     else
-      path = fs.path.join(flutterRoot, cacheDir, 'bin', 'cache');
+      path = fs.path.join(flutterRoot, 'bin', 'cache');
     final Directory dir = fs.directory(path);
     if (!dir.existsSync())
       dir.create(recursive: true);
