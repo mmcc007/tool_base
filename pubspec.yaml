@@ -1,6 +1,6 @@
 name: tool_base
-description: Flutter Tools' base. Use to create command line tools.
-version: 1.9.5+2
+description: Base for developing command line apps. Take from Flutter Tools.
+version: 1.9.5+3
 homepage: https://github.com/mmcc007/tool_base
 author: Maurice McCabe <mmcc007@gmail.com>
 
