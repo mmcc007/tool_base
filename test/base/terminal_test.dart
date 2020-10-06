@@ -10,6 +10,7 @@ import 'package:tool_base/src/globals.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
+import '../src/mocks.dart' show MutablePlatform;
 
 void main() {
   group('output preferences', () {
@@ -26,7 +27,7 @@ void main() {
       printStatus(testString);
       expect(testLogger.statusText, equals('$testString\n'));
     }, overrides: <Type, Generator>{
-      Platform: () => FakePlatform()..stdoutSupportsAnsi = true,
+      Platform: () => MutablePlatform()..stdoutSupportsAnsi = true,
       OutputPreferences: () => OutputPreferences(wrapText: false),
     });
   });
@@ -48,7 +49,7 @@ void main() {
       }
     }, overrides: <Type, Generator>{
       OutputPreferences: () => OutputPreferences(showColor: true),
-      Platform: () => FakePlatform()..stdoutSupportsAnsi = true,
+      Platform: () => MutablePlatform()..stdoutSupportsAnsi = true,
     });
 
     testUsingContext('adding bold works', () {
@@ -58,7 +59,7 @@ void main() {
       );
     }, overrides: <Type, Generator>{
       OutputPreferences: () => OutputPreferences(showColor: true),
-      Platform: () => FakePlatform()..stdoutSupportsAnsi = true,
+      Platform: () => MutablePlatform()..stdoutSupportsAnsi = true,
     });
 
     testUsingContext('nesting bold within color works', () {
@@ -75,7 +76,7 @@ void main() {
       );
     }, overrides: <Type, Generator>{
       OutputPreferences: () => OutputPreferences(showColor: true),
-      Platform: () => FakePlatform()..stdoutSupportsAnsi = true,
+      Platform: () => MutablePlatform()..stdoutSupportsAnsi = true,
     });
 
     testUsingContext('nesting color within bold works', () {
@@ -92,7 +93,7 @@ void main() {
       );
     }, overrides: <Type, Generator>{
       OutputPreferences: () => OutputPreferences(showColor: true),
-      Platform: () => FakePlatform()..stdoutSupportsAnsi = true,
+      Platform: () => MutablePlatform()..stdoutSupportsAnsi = true,
     });
 
     testUsingContext('nesting color within color works', () {
@@ -111,7 +112,7 @@ void main() {
       );
     }, overrides: <Type, Generator>{
       OutputPreferences: () => OutputPreferences(showColor: true),
-      Platform: () => FakePlatform()..stdoutSupportsAnsi = true,
+      Platform: () => MutablePlatform()..stdoutSupportsAnsi = true,
     });
 
     testUsingContext('nesting bold within bold works', () {
@@ -126,7 +127,7 @@ void main() {
       );
     }, overrides: <Type, Generator>{
       OutputPreferences: () => OutputPreferences(showColor: true),
-      Platform: () => FakePlatform()..stdoutSupportsAnsi = true,
+      Platform: () => MutablePlatform()..stdoutSupportsAnsi = true,
     });
   });
 

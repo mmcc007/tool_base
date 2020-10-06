@@ -11,7 +11,7 @@ import 'dart:io' as io show IOSink, ProcessSignal, Stdout, StdoutException;
 //import 'package:tool_base/src/application_package.dart';
 //import 'package:tool_base/src/base/file_system.dart' hide IOSink;
 import 'package:tool_base/src/base/io.dart';
-//import 'package:tool_base/src/base/platform.dart';
+import 'package:tool_base/src/base/platform.dart';
 //import 'package:tool_base/src/build_info.dart';
 //import 'package:tool_base/src/compile.dart';
 //import 'package:tool_base/src/devfs.dart';
@@ -405,6 +405,62 @@ class MockStdio extends Stdio {
       _stdout.writes.map<String>(_stdout.encoding.decode).toList();
   List<String> get writtenToStderr =>
       _stderr.writes.map<String>(_stderr.encoding.decode).toList();
+}
+
+// platform 3.0.0-nullsafety removed mutability from FakePlatform.
+// This is an alternative.
+class MutablePlatform extends Platform {
+  static const Platform _kLocalPlatform = LocalPlatform();
+
+  MutablePlatform();
+
+  @override
+  Map<String, String> environment = _kLocalPlatform.environment;
+
+  @override
+  List<String> executableArguments = _kLocalPlatform.executableArguments;
+
+  @override
+  String localHostname = _kLocalPlatform.localHostname;
+
+  @override
+  String localeName = _kLocalPlatform.localeName;
+
+  @override
+  int numberOfProcessors = _kLocalPlatform.numberOfProcessors;
+
+  @override
+  String operatingSystem = _kLocalPlatform.operatingSystem;
+
+  @override
+  String operatingSystemVersion = _kLocalPlatform.operatingSystemVersion;
+
+  @override
+  String packageConfig = _kLocalPlatform.packageConfig;
+
+  @override
+  String executable = _kLocalPlatform.executable;
+
+  @override
+  String packageRoot = _kLocalPlatform.packageRoot;
+
+  @override
+  String pathSeparator = _kLocalPlatform.pathSeparator;
+
+  @override
+  String resolvedExecutable = _kLocalPlatform.resolvedExecutable;
+
+  @override
+  Uri script = _kLocalPlatform.script;
+
+  @override
+  bool stdinSupportsAnsi = _kLocalPlatform.stdinSupportsAnsi;
+
+  @override
+  bool stdoutSupportsAnsi = _kLocalPlatform.stdoutSupportsAnsi;
+
+  @override
+  String version = _kLocalPlatform.version;
 }
 
 //class MockPollingDeviceDiscovery extends PollingDeviceDiscovery {
