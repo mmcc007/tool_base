@@ -5,7 +5,6 @@
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
-import 'package:file/record_replay.dart';
 import 'package:meta/meta.dart';
 
 import 'common.dart' show throwToolExit;
@@ -24,33 +23,6 @@ const FileSystem _kLocalFs = LocalFileSystem();
 /// By default it uses local disk-based implementation. Override this in tests
 /// with [MemoryFileSystem].
 FileSystem get fs => context.get<FileSystem>() ?? _kLocalFs;
-
-/// Gets a [FileSystem] that will record file system activity to the specified
-/// base recording [location].
-///
-/// Activity will be recorded in a subdirectory of [location] named `"file"`.
-/// It is permissible for [location] to represent an existing non-empty
-/// directory as long as there is no collision with the `"file"` subdirectory.
-RecordingFileSystem getRecordingFileSystem(String location) {
-  final Directory dir = getRecordingSink(location, _kRecordingType);
-  final RecordingFileSystem fileSystem = RecordingFileSystem(
-      delegate: _kLocalFs, destination: dir);
-  addShutdownHook(() async {
-    await fileSystem.recording.flush();
-  }, ShutdownStage.SERIALIZE_RECORDING);
-  return fileSystem;
-}
-
-/// Gets a [FileSystem] that replays invocation activity from a previously
-/// recorded set of invocations.
-///
-/// [location] must represent a directory to which file system activity has
-/// been recorded (i.e. the result of having been previously passed to
-/// [getRecordingFileSystem]), or a [ToolExit] will be thrown.
-ReplayFileSystem getReplayFileSystem(String location) {
-  final Directory dir = getReplaySource(location, _kRecordingType);
-  return ReplayFileSystem(recording: dir);
-}
 
 /// Create the ancestor directories of a file path if they do not already exist.
 void ensureDirectoryExists(String filePath) {

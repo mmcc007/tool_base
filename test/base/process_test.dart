@@ -12,7 +12,7 @@ import 'package:process/process.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
-import '../src/mocks.dart' show MockProcess, MockProcessManager;
+import '../src/mocks.dart' show MockProcess, MockProcessManager, MutablePlatform;
 
 void main() {
   group('process exceptions', () {
@@ -95,7 +95,7 @@ void main() {
       ProcessManager: () => mockProcessManager,
       OutputPreferences: () =>
           OutputPreferences(wrapText: true, wrapColumn: 40),
-      Platform: () => FakePlatform.fromPlatform(const LocalPlatform())
+      Platform: () => MutablePlatform()
         ..stdoutSupportsAnsi = false,
     });
   });

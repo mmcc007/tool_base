@@ -12,6 +12,7 @@ import 'package:quiver/testing/async.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
+import '../src/mocks.dart' show MutablePlatform;
 
 void main() {
   testUsingContext('retry from 500', () async {
@@ -125,7 +126,7 @@ void main() {
     HttpClientFactory: () => () => MockHttpClientThrowing(
       ArgumentError('test exception handling'),
     ),
-    Platform: () => FakePlatform.fromPlatform(const LocalPlatform())
+    Platform: () => MutablePlatform()
       ..environment = <String, String>{
         'FLUTTER_STORAGE_BASE_URL': 'example.invalid'
       },

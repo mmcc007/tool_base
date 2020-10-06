@@ -18,6 +18,7 @@ import 'package:tool_base/src/base/os.dart';
 
 import 'src/common.dart';
 import 'src/context.dart';
+import 'src/mocks.dart' show MutablePlatform;
 import 'src/testbed.dart';
 
 void main() {
@@ -87,7 +88,7 @@ void main() {
     testUsingContext('should not throw when FLUTTER_ALREADY_LOCKED is set', () async {
       Cache.checkLockAcquired();
     }, overrides: <Type, Generator>{
-      Platform: () => FakePlatform()..environment = <String, String>{'FLUTTER_ALREADY_LOCKED': 'true'},
+      Platform: () => MutablePlatform()..environment = <String, String>{'FLUTTER_ALREADY_LOCKED': 'true'},
     });
   });
 
@@ -215,14 +216,14 @@ void main() {
 
   group('EngineCachedArtifact', () {
     FakeHttpClient fakeHttpClient;
-    FakePlatform fakePlatform;
+    MutablePlatform fakePlatform;
     MemoryFileSystem memoryFileSystem;
     MockCache mockCache;
     MockOperatingSystemUtils mockOperatingSystemUtils;
 
     setUp(() {
       fakeHttpClient = FakeHttpClient();
-      fakePlatform = FakePlatform()..environment = const <String, String>{};
+      fakePlatform = MutablePlatform()..environment = const <String, String>{};
       memoryFileSystem = MemoryFileSystem();
       mockCache = MockCache();
       mockOperatingSystemUtils = MockOperatingSystemUtils();
